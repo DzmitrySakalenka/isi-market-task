@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Base QA System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .query-section {
+            padding: 40px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .query-form {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status-bar {
+            padding: 20px 40px;
+            background: #e9ecef;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+        }
+
+        .status-dot.ready {
+            background: #28a745;
+        }
+
+        .status-dot.warning {
+            background: #ffc107;
+        }
+
+        .results-section {
+            padding: 40px;
+        }
+
+        .answer-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .answer-text {
+            font-size: 18px;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .sources-section {
+            margin-top: 20px;
+        }
+
+        .sources-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .source-item {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #e9ecef;
+            transition: box-shadow 0.2s;
+        }
+
+        .source-item:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .source-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .source-meta {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .source-score {
+            font-size: 12px;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+
+        @media (max-width: 768px) {
+            .query-form {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .query-section, .results-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Knowledge Base QA System</h1>
+            <p>Ask questions about your document collection</p>
+        </div>
+
+        <div class="main-content">
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <div class="status-dot" id="statusDot"></div>
+                    <span id="statusText">Checking system status...</span>
+                </div>
+            </div>
+
+            <div class="query-section">
+                <form class="query-form" id="queryForm">
+                    <div class="form-group">
+                        <label for="question">Your Question</label>
+                        <textarea 
+                            id="question" 
+                            name="question" 
+                            rows="3" 
+                            placeholder="Ask a question about the documents in the knowledge base..."
+                            required
+                        ></textarea>
+                    </div>
+                    <button type="submit" class="btn" id="submitBtn">
+                        Ask Question
+                    </button>
+                </form>
+            </div>
+
+            <div class="results-section" id="resultsSection">
+                <div class="info-message">
+                    Enter a question above to get started. The system will search through the document collection and provide an answer based on the most relevant content.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let systemStatus = {
+            ready: false,
+            documentsLoaded: false,
+            ollamaAvailable: false
+        };
+
+        // DOM elements
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const queryForm = document.getElementById('queryForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const resultsSection = document.getElementById('resultsSection');
+        const questionInput = document.getElementById('question');
+
+        // Check system status on load
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                if (data.status === 'ok') {
+                    const documentsCount = data.vector_store?.document_count || 0;
+                    systemStatus.documentsLoaded = documentsCount > 0;
+                    systemStatus.ollamaAvailable = data.ollama_available;
+                    systemStatus.ready = systemStatus.documentsLoaded;
+                    
+                    updateStatusIndicator();
+                } else {
+                    throw new Error(data.message || 'Unknown error');
+                }
+            } catch (error) {
+                statusDot.className = 'status-dot';
+                statusText.textContent = `System error: ${error.message}`;
+                submitBtn.disabled = true;
+            }
+        }
+
+        function updateStatusIndicator() {
+            if (systemStatus.ready) {
+                statusDot.className = 'status-dot ready';
+                statusText.textContent = 'System ready';
+                submitBtn.disabled = false;
+            } else if (systemStatus.documentsLoaded) {
+                statusDot.className = 'status-dot warning';
+                statusText.textContent = 'Documents loaded, but Ollama not available (search only)';
+                submitBtn.disabled = false;
+            } else {
+                statusDot.className = 'status-dot warning';
+                statusText.textContent = 'No documents loaded. Please process documents first.';
+                submitBtn.disabled = true;
+            }
+        }
+
+        // Handle form submission
+        queryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const question = questionInput.value.trim();
+            if (!question) return;
+
+            // Show loading state
+            showLoading();
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        question: question,
+                        k: 5
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResults(data);
+                } else {
+                    displayError(data.error || 'Unknown error occurred');
+                }
+            } catch (error) {
+                displayError(`Network error: ${error.message}`);
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        function showLoading() {
+            resultsSection.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Processing your question...
+                </div>
+            `;
+        }
+
+        function displayResults(data) {
+            let html = '';
+            
+            if (data.error) {
+                html = `<div class="error-message">${data.error}</div>`;
+            } else {
+                html = `
+                    <div class="answer-card">
+                        <div class="answer-text">${formatText(data.answer)}</div>
+                        
+                        ${data.sources && data.sources.length > 0 ? `
+                            <div class="sources-section">
+                                <div class="sources-title">Sources (${data.sources.length} documents)</div>
+                                ${data.sources.map(source => `
+                                    <div class="source-item">
+                                        <div class="source-title">${source.title}</div>
+                                        <div class="source-meta">
+                                            Date: ${formatDate(source.date)} | 
+                                            Countries: ${source.country_codes?.join(', ') || 'None'} |
+                                            Industries: ${source.industries?.join(', ') || 'None'}
+                                        </div>
+                                        <div class="source-score">
+                                            Relevance: ${(source.similarity_score * 100).toFixed(1)}%
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+            
+            resultsSection.innerHTML = html;
+        }
+
+        function displayError(message) {
+            resultsSection.innerHTML = `
+                <div class="error-message">
+                    <strong>Error:</strong> ${message}
+                </div>
+            `;
+        }
+
+        function formatText(text) {
+            // Simple text formatting
+            return text
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>');
+        }
+
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString();
+            } catch {
+                return dateString;
+            }
+        }
+
+        // Initialize
+        checkSystemStatus();
+        
+        // Periodically check status
+        setInterval(checkSystemStatus, 30000); // Every 30 seconds
+    </script>
+</body>
+</html> 
